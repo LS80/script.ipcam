@@ -40,17 +40,20 @@ def log(message, level=xbmc.LOGNOTICE):
 class StopResumePlayer(xbmc.Player):
     def maybe_stop_current(self):
         if self.isPlaying():
-            self.seek_time = self.getTime()
+            self.resume_time = self.getTime()
             self.previous_file = self.getPlayingFile()
             self.stop()
+            log("Stopped {0}".format(self.previous_file))
         else:
             self.previous_file = None
 
     def maybe_resume_previous(self):
         if self.previous_file is not None:
-            self.play(self.previous_file)
-            xbmc.sleep(1000) # wait for file to actually play before we can seek
-            self.seekTime(self.seek_time - 2.)
+            resume_time_str = "{0:.1f}".format(self.resume_time - 10.)
+            log("Resuming {0} at {1}".format(self.previous_file, resume_time_str))
+            listitem = xbmcgui.ListItem()
+            listitem.setProperty('StartOffset', resume_time_str)
+            self.play(self.previous_file, listitem)
 
 
 class CameraControlDialog(xbmcgui.WindowDialog):
@@ -93,8 +96,7 @@ class CameraControlDialog(xbmcgui.WindowDialog):
     def __exit__(self, exc_type, exc_value, traceback):
         self.stop()
 
+
 with CameraControlDialog() as camera:
     camera.start()
 
-            
-            
